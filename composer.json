@@ -1,0 +1,19 @@
+{
+  "name": "gofintech/elog",
+  "description": "Logging library with a focus on what's important",
+  "require": {
+    "php": ">=7.2"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Antanas Kompanas",
+      "email": "a.kompanas@gofintech.lt"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "GoFinTech\\Logging\\": "src/"
+    }
+  }
+}
