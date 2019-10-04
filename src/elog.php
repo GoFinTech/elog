@@ -11,26 +11,79 @@
 namespace GoFinTech\Logging;
 
 
+use GoFinTech\Logging\Constructs\LogEngineInterface;
+use GoFinTech\Logging\Constructs\LogScope;
+use GoFinTech\Logging\Engine\TrivialEngine;
 use Throwable;
 
 class elog
 {
-    public static function msg($t, ...$args): void
+    /** @var string Message parameter that overrides message code */
+    public const P_CODE = '__code';
+    /** @var string  Message parameter that stores exception */
+    public const P_EXCEPTION = '__ex';
+    /** @var string Message parameter that extends context */
+    public const P_CONTEXT = '__ctx';
+    /** @var string Message parameter for surplus call parameters */
+    public const P_PAYLOAD = '__payload';
+
+    /** @var int Message level hints */
+    public const L_INFO = 0;
+    /** @var int Hint for audit trail records */
+    public const L_AUDIT = 0b111;
+    /** @var int Hint for self-diagnostic check failures */
+    public const L_WARN  = 0b001;
+    /** @var int Hint for business errors and expected exceptions */
+    public const L_SMOKE = 0b010;
+    /** @var int Hint for technical errors and unexpected exceptions */
+    public const L_CRASH = 0b011;
+    /** @var int Hint for program flow tracing */
+    public const L_TRACE = 0b100;
+    /** @var int Hint for additional debug data */
+    public const L_DEBUG = 0b101;
+
+    public const C_FILE = 'file';
+    public const C_LINE = 'line';
+    public const C_CLASS = 'class';
+    public const C_METHOD = 'method';
+    public const C_PACKAGE = 'package';
+    public const C_APP = 'app';
+    public const C_INSTANCE = 'instance';
+
+    /** @var LogEngineInterface */
+    private static $engine;
+
+    public static function msg(...$s): void
     {
-        self::output($t, $args);
+        (self::$engine ?? self::$engine = self::defaultEngine())->emit($s, self::L_INFO, 1);
     }
 
-    public static function error($t, ...$args): void
+    public static function error(...$s): void
     {
-        self::output("ERROR $t", $args);
+        (self::$engine ?? self::$engine = self::defaultEngine())->emit($s, self::L_SMOKE, 1);
     }
 
-    public static function debug($t, ...$args): void
+    public static function debug(...$s): void
     {
-        self::output("DEBUG $t", $args);
+        (self::$engine ?? self::$engine = self::defaultEngine())->emit($s, self::L_DEBUG, 1);
     }
 
-    public static function output($msg, $args): void
+    public static function init(LogEngineInterface $engine): void
+    {
+        // TODO
+    }
+
+    public static function scope(array $context = null): LogScope
+    {
+        // TODO
+    }
+
+    private static function defaultEngine(): LogEngineInterface
+    {
+        return new TrivialEngine();
+    }
+
+    private static function output($msg, $args): void
     {
         $buf = [$msg];
         foreach ($args as $arg) {
@@ -39,7 +92,7 @@ class elog
         echo implode(' ', $buf) . "\n";
     }
 
-    public static function formatData($arg, int $recurse = 1): string
+    private static function formatData($arg, int $recurse = 1): string
     {
         if (is_null($arg)) {
             return "NULL";
