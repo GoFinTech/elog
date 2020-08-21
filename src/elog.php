@@ -32,11 +32,30 @@ class elog
 
     public static function output($msg, $args): void
     {
-        $buf = [$msg];
+        if (strpos($msg, '{') !== false && is_array($args[0] ?? null)) {
+            $buf = [self::formatMessage($msg, array_shift($args))];
+        }
+        else {
+            $buf = [$msg];
+        }
         foreach ($args as $arg) {
             $buf[] = self::formatData($arg);
         }
         echo implode(' ', $buf) . "\n";
+    }
+
+    public static function formatMessage($msg, $args): string
+    {
+        return preg_replace_callback('/{{?[^{}]+}/',
+            function ($m) use ($args) {
+                if (substr($m[0], 1, 1) == '{')
+                    return $m[0];
+                $key = substr($m[0], 1, -1);
+                if (array_key_exists($key, $args))
+                    return self::formatData($args[$key]);
+                else
+                    return $m[0];
+            }, $msg);
     }
 
     public static function formatData($arg, int $recurse = 1): string
