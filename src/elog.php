@@ -1,7 +1,7 @@
 <?php
 
 /*
- * (c) 2019 Go Financial Technologies, JSC
+ * (c) 2019,2020 Go Financial Technologies, JSC
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
